@@ -9,8 +9,19 @@ A full-stack search system that leverages xAI's Grok API to provide intelligent 
 ![React](https://img.shields.io/badge/React-18-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-teal)
 
-![Grok Search Screenshot](docs/assets/screenshot.png)
-![Grok Posts Screenshot](docs/assets/posts.png)
+<p align="center">
+  <img src="docs/assets/screenshot.png" alt="Grok Search Interface" width="100%">
+</p>
+<p align="center">
+  <img src="docs/assets/posts.png" alt="Search Results" width="100%">
+</p>
+
+<div align="center">
+  <h3>🎥 Watch the Demo</h3>
+  <a href="docs/assets/demo.webp">
+    <img src="docs/assets/demo.webp" alt="Demo Walkthrough" width="80%">
+  </a>
+</div>
 
 ---
 
