@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  grok-search:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grok-search
+    ports:
+      - "8000:8000"
+    environment:
+      - XAI_API_KEY=${XAI_API_KEY}
+      - DATABASE_URL=sqlite+aiosqlite:///./data/grok_search.db
+      - DEBUG=false
+    volumes:
+      - grok-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Development service with hot reload
+  grok-search-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: grok-search-dev
+    ports:
+      - "8000:8000"
+      - "3000:3000"
+    environment:
+      - XAI_API_KEY=${XAI_API_KEY}
+      - DATABASE_URL=sqlite+aiosqlite:///./data/grok_search.db
+      - DEBUG=true
+    volumes:
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+      - grok-data:/app/data
+    profiles:
+      - dev
+
+volumes:
+  grok-data:
+

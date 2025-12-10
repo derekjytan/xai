@@ -1,0 +1,32 @@
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Database
+aiosqlite==0.19.0
+sqlalchemy==2.0.25
+greenlet==3.0.3
+
+# HTTP client for Grok API and scraping
+httpx==0.26.0
+aiohttp==3.9.1
+
+# Data validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Scraping
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
+# Rate limiting
+slowapi==0.1.9
+
+# Utilities
+python-dotenv==1.0.0
+tenacity==8.2.3
+
+# Optional: embeddings (can be disabled)
+numpy==1.26.3
+scikit-learn==1.4.0

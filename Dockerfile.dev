@@ -1,0 +1,39 @@
+# Development Dockerfile with hot reload
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY backend/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create data directory
+RUN mkdir -p /app/data
+
+# Environment
+ENV PYTHONPATH=/app
+ENV DATABASE_URL=sqlite+aiosqlite:///./data/grok_search.db
+
+# Expose ports
+EXPOSE 8000 3000
+
+# Development startup script
+COPY <<EOF /app/start-dev.sh
+#!/bin/bash
+cd /app/frontend && npm install && npm run dev &
+cd /app && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+EOF
+
+RUN chmod +x /app/start-dev.sh
+
+CMD ["/app/start-dev.sh"]
+
