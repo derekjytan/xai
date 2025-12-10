@@ -11,10 +11,6 @@ A full-stack search system that leverages xAI's Grok API to provide intelligent 
 
 ![Grok Search Screenshot](docs/assets/screenshot.png)
 
-> **Watch the Demo:**
-> 
-> ![Demo Walkthrough](docs/assets/demo.webp)
-
 ---
 
 ## 🎯 Key Features
@@ -321,6 +317,55 @@ graph TD
 |    Database    |        |   Embeddings   |
 | (SQLite + FTS) |        |  (Hash/Vector) |
 +----------------+        +----------------+
+```
+
+### 🔄 Search Request Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Frontend
+    participant API as Backend
+    participant Grok as Grok API
+    participant DB as SQLite
+
+    User->>UI: Types "AI news"
+    UI->>API: POST /search
+    API->>Grok: Enhance Query ("AI news")
+    Grok-->>API: Expanded: "Artificial Intelligence OR LLM"
+    
+    par Parallel Search
+        API->>DB: FTS5 Keyword Search
+        API->>DB: Vector Similarity Search
+    end
+    
+    DB-->>API: Combined Results
+    API->>Grok: Summarize Results
+    Grok-->>API: Contextual Summary
+    API-->>UI: Results + Summary
+    UI-->>User: Displays Cards & Summary
+```
+
+### 🗄️ Database Schema
+
+```mermaid
+erDiagram
+    POST ||--o{ POST_METADATA : has
+    POST {
+        string id PK
+        string content
+        string author
+        datetime posted_at
+        int likes
+        int retweets
+    }
+    POST_METADATA {
+        string post_id FK
+        float[] embedding
+        string sentiment
+        string[] topics
+        string[] entities
+    }
 ```
 
 ---
