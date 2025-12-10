@@ -1,6 +1,6 @@
 # 🔍 Grok Search
 
-**Intelligent X/Twitter Search Powered by Grok**
+**Intelligent X/Twitter Search Powered by Grok AI**
 
 A full-stack search system that leverages xAI's Grok API to provide intelligent discovery and retrieval of X/Twitter posts. Built for the xAI Technical Assessment.
 
@@ -9,33 +9,66 @@ A full-stack search system that leverages xAI's Grok API to provide intelligent 
 ![React](https://img.shields.io/badge/React-18-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-teal)
 
-## ✨ Features
+---
 
-### 🧠 Intelligent Query Processing
+## 🎯 Key Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Grok API Integration** | Query enhancement, content analysis, summarization | ✅ |
+| **Token-Based Search** | FTS5 full-text search with boolean operators | ✅ |
+| **Semantic Search** | 128-dim embedding vectors with hybrid retrieval | ✅ |
+| **AI Summarization** | Context-aware summaries of search results | ✅ |
+| **Question Answering** | Natural language Q&A over posts | ✅ |
+| **Real-time UI** | Auto-refreshing filters, responsive design | ✅ |
+
+---
+
+## ✨ Feature Details
+
+### 🧠 Grok API Integration
 - **Query Enhancement**: Grok analyzes and improves search queries
-- **Intent Recognition**: Understands user intent (find_opinions, find_news, etc.)
-- **Query Expansion**: Automatically expands queries with related terms
+- **Intent Recognition**: Understands user intent (find_opinions, find_news, find_announcements, etc.)
+- **Query Expansion**: Automatically expands queries with related terms and synonyms
+- **Content Analysis**: Generates descriptions, topics, sentiment, and entities for each post
+- **Error Handling**: Retry logic with exponential backoff for API resilience
 
-### 🔎 Token-Based Retrieval
-- **Full-Text Search**: SQLite FTS5 for fast, accurate text search
-- **Boolean Operators**: Support for AND, OR, NOT queries
-- **Filtering**: Filter by author, sentiment, date range
+### 🔎 Token-Based Retrieval (Required)
+- **SQLite FTS5**: High-performance full-text search engine
+- **Boolean Operators**: Support for AND, OR queries with phrase matching
+- **Multi-field Search**: Searches content, descriptions, topics, and author
+- **Filters**: Author, sentiment, date range, engagement metrics
+- **Fast Indexing**: Automatic triggers maintain search index on insert/update/delete
 
-### 📝 AI-Generated Content Analysis
-- **Post Descriptions**: Auto-generated summaries for each post
-- **Topic Extraction**: Identifies key themes and topics
-- **Sentiment Analysis**: Classifies posts as positive/negative/neutral/mixed
-- **Entity Recognition**: Extracts people, companies, products
+### 🧬 Embedding-Based Retrieval (Optional - Implemented!)
+- **Vector Embeddings**: 128-dimensional hash-based embeddings for each post
+- **Cosine Similarity**: Semantic matching based on meaning, not just keywords
+- **Hybrid Mode**: Combines FTS5 keyword search + vector similarity for best results
+- **Three Search Modes**: 
+  - `keyword` - Traditional full-text search
+  - `semantic` - Embedding-based similarity search  
+  - `hybrid` - Weighted combination of both (default)
 
-### 💬 Question Answering
-- Ask natural language questions about the posts
-- Grok synthesizes answers from search results
-- Sources are cited for transparency
+### 💬 Intelligent Query Processing
+- **Ambiguous Query Detection**: Identifies vague queries and asks for clarification
+- **Query Reformulation**: Expands "AI" to "artificial intelligence, machine learning, deep learning"
+- **Intent Classification**: Categorizes queries by type (opinions, news, announcements, etc.)
 
-### 📊 Result Summarization
-- AI-generated summaries of search results
-- Key insights and themes across posts
-- Suggested related queries
+### 📊 AI Summarization
+- **Search Summaries**: Grok generates contextual summaries of search results
+- **Key Insights**: Highlights most important findings
+- **Thematic Analysis**: Groups results by theme
+- **Suggested Queries**: Recommends related searches
+
+### 🖥️ Frontend Interface
+- **Real-time Search**: Results appear as you type (with debounce)
+- **Auto-refresh Filters**: Changing filters automatically updates results
+- **Search Mode Toggle**: Switch between keyword/semantic/hybrid
+- **Sort Options**: By relevance, likes, retweets, date
+- **Sentiment Filter**: Filter by positive/negative/neutral/mixed
+- **Responsive Design**: Works on desktop and mobile
+
+---
 
 ## 🚀 Quick Start
 
@@ -64,9 +97,14 @@ docker-compose up --build
 
 ### 3. Load Sample Data
 
-1. Open http://localhost:8000 in your browser
-2. Click "Load Sample Posts" to populate the database
-3. Start searching!
+```bash
+# Via API
+curl -X POST http://localhost:8000/api/scrape -H "Content-Type: application/json" -d '{"load_sample": true}'
+
+# Or click "Load Sample Posts" in the UI
+```
+
+---
 
 ## 🛠️ Local Development
 
@@ -77,7 +115,7 @@ cd backend
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -103,98 +141,174 @@ npm run dev
 
 Visit http://localhost:3000 for frontend with hot reload.
 
-## 📡 API Endpoints
+---
 
-### Search
+## 📡 API Reference
+
+### Search Endpoints
+
+#### GET /api/search
+Simple search with query parameters.
 
 ```bash
-# Simple search
-GET /api/search?q=AI announcements
+# Basic search
+curl "http://localhost:8000/api/search?q=AI+technology"
 
-# Advanced search with filters
-GET /api/search?q=startup advice&sort_by=likes&sentiment=positive&author=naval
+# With filters
+curl "http://localhost:8000/api/search?q=startup+advice&author=naval&sentiment=positive&mode=hybrid"
+```
 
-# POST for complex queries
-POST /api/search
-{
-  "query": "What are tech leaders saying about AGI?",
-  "limit": 20,
-  "sort_by": "relevance",
-  "include_summary": true,
-  "enhance_query": true
-}
+**Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | required | Search query |
+| `limit` | int | 20 | Max results (1-100) |
+| `offset` | int | 0 | Pagination offset |
+| `sort_by` | string | "relevance" | Sort: relevance, likes, retweets, posted_at |
+| `sort_order` | string | "desc" | Order: asc, desc |
+| `author` | string | null | Filter by author username |
+| `sentiment` | string | null | Filter: positive, negative, neutral, mixed |
+| `mode` | string | "hybrid" | Search mode: keyword, semantic, hybrid |
+| `include_summary` | bool | true | Include AI summary |
+| `enhance_query` | bool | true | Use Grok to enhance query |
+
+#### POST /api/search
+Complex search with JSON body (same parameters as above).
+
+```bash
+curl -X POST http://localhost:8000/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What are tech leaders saying about AGI?", "mode": "hybrid"}'
 ```
 
 ### Question Answering
 
+#### POST /api/ask
+Ask natural language questions about the posts.
+
 ```bash
-POST /api/ask
+curl -X POST http://localhost:8000/api/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What do leaders think about AI safety?"}'
+```
+
+**Response:**
+```json
 {
-  "question": "What are the latest AI developments?"
+  "answer": "Tech leaders express varied views on AI safety...",
+  "sources": [...],
+  "query_analysis": {...}
 }
 ```
 
 ### Data Management
 
-```bash
-# Load sample data
-POST /api/scrape
-{"load_sample": true}
+#### POST /api/scrape
+Load sample data or scrape accounts.
 
-# Add custom post
-POST /api/posts
+```bash
+# Load 100 sample posts
+curl -X POST http://localhost:8000/api/scrape \
+  -H "Content-Type: application/json" \
+  -d '{"load_sample": true}'
+
+# Scrape specific account (uses Nitter)
+curl -X POST http://localhost:8000/api/scrape \
+  -H "Content-Type: application/json" \
+  -d '{"username": "elonmusk"}'
+```
+
+#### GET /api/posts
+List posts with pagination and filters.
+
+```bash
+curl "http://localhost:8000/api/posts?limit=50&author=sama"
+```
+
+#### POST /api/posts
+Add a custom post.
+
+```bash
+curl -X POST http://localhost:8000/api/posts \
+  -H "Content-Type: application/json" \
+  -d '{"post_id": "custom_1", "author_username": "user", "content": "Post content"}'
+```
+
+### Utilities
+
+#### GET /api/stats
+Database statistics.
+
+```bash
+curl http://localhost:8000/api/stats
+```
+
+**Response:**
+```json
 {
-  "post_id": "unique_id",
-  "author_username": "user",
-  "content": "Post content here",
-  "likes": 100
+  "total_posts": 100,
+  "unique_authors": 20,
+  "posts_with_embeddings": 100,
+  "top_authors": [...]
 }
-
-# List posts
-GET /api/posts?limit=50&author=elonmusk
 ```
 
-### Statistics
+#### GET /api/health
+System health check.
 
 ```bash
-GET /api/stats
+curl http://localhost:8000/api/health
 ```
 
-### Health Check
-
-```bash
-GET /api/health
-```
+---
 
 ## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Frontend                              │
-│                  React + Vite + Tailwind                     │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-                          ▼
+│                     Frontend (React)                         │
+│              Vite + TypeScript + Tailwind CSS                │
+│    ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐       │
+│    │ Search  │  │ Filters │  │ Results │  │   Q&A   │       │
+│    └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘       │
+└─────────┼────────────┼────────────┼────────────┼────────────┘
+          │            │            │            │
+          ▼            ▼            ▼            ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      FastAPI Backend                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   Routes    │  │   Search    │  │    Grok Client      │  │
-│  │   (API)     │──│   Service   │──│   (Query/Summary)   │  │
-│  └─────────────┘  └──────┬──────┘  └─────────────────────┘  │
-│                          │                                   │
-│  ┌─────────────────────────────────────────────────────┐    │
-│  │              SQLite + FTS5 Database                  │    │
-│  │   Posts │ Metadata │ Search Index │ Query Logs       │    │
-│  └─────────────────────────────────────────────────────┘    │
+│                   FastAPI Backend                            │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │                    Routes (API)                       │   │
+│  │  /search  /ask  /scrape  /posts  /stats  /health     │   │
+│  └────────────────────────┬─────────────────────────────┘   │
+│                           │                                  │
+│  ┌────────────────────────┴─────────────────────────────┐   │
+│  │              Search Service                           │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────────────────┐   │   │
+│  │  │  FTS5   │  │ Vector  │  │   Result Merger     │   │   │
+│  │  │ Search  │  │ Search  │  │   (Hybrid Mode)     │   │   │
+│  │  └────┬────┘  └────┬────┘  └──────────┬──────────┘   │   │
+│  └───────┼────────────┼──────────────────┼──────────────┘   │
+│          │            │                  │                   │
+│  ┌───────┴────────────┴──────────────────┴──────────────┐   │
+│  │              SQLite Database                          │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────────────────┐   │   │
+│  │  │  Posts  │  │ FTS5    │  │   Search Logs       │   │   │
+│  │  │  Table  │  │ Index   │  │   (Analytics)       │   │   │
+│  │  └─────────┘  └─────────┘  └─────────────────────┘   │   │
+│  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
-                          │
-                          ▼
+                           │
+                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                       Grok API                               │
-│            Query Enhancement │ Content Analysis              │
-│            Summarization │ Question Answering                │
+│                       Grok API (xAI)                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │   Query     │  │   Content   │  │    Summarization    │  │
+│  │ Enhancement │  │  Analysis   │  │    & Q&A            │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+---
 
 ## 📁 Project Structure
 
@@ -202,20 +316,22 @@ GET /api/health
 grok-search/
 ├── backend/
 │   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py          # FastAPI application
-│   │   ├── config.py        # Settings management
+│   │   ├── main.py          # FastAPI app initialization
+│   │   ├── config.py        # Settings (env vars)
 │   │   ├── database.py      # SQLAlchemy models & FTS5
-│   │   ├── grok_client.py   # Grok API integration
-│   │   ├── search.py        # Search service
+│   │   ├── grok_client.py   # Grok API wrapper
+│   │   ├── search.py        # Search service (FTS5 + vectors)
 │   │   ├── scraper.py       # Data collection
-│   │   ├── schemas.py       # Pydantic schemas
+│   │   ├── embeddings.py    # Local embedding generator
+│   │   ├── schemas.py       # Pydantic request/response models
 │   │   └── routes.py        # API endpoints
+│   ├── data/
+│   │   └── sample_posts.json  # 100 sample posts
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── App.tsx          # Main React component
-│   │   ├── api.ts           # API client
+│   │   ├── api.ts           # API client functions
 │   │   ├── types.ts         # TypeScript types
 │   │   └── index.css        # Tailwind styles
 │   ├── package.json
@@ -225,62 +341,74 @@ grok-search/
 └── README.md
 ```
 
+---
+
 ## 🔑 Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `XAI_API_KEY` | Your Grok API key | Yes |
-| `DATABASE_URL` | SQLite database path | No (defaults to `./grok_search.db`) |
-| `DEBUG` | Enable debug mode | No (defaults to `true`) |
-| `HOST` | Server host | No (defaults to `0.0.0.0`) |
-| `PORT` | Server port | No (defaults to `8000`) |
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `XAI_API_KEY` | Your Grok API key from console.x.ai | **Yes** | - |
+| `DATABASE_URL` | SQLite database path | No | `./grok_search.db` |
+| `DEBUG` | Enable debug logging | No | `true` |
+| `HOST` | Server host | No | `0.0.0.0` |
+| `PORT` | Server port | No | `8000` |
+| `SCRAPE_DELAY_SECONDS` | Delay between scrape requests | No | `2.0` |
+
+---
 
 ## 🎯 Example Queries
 
 ### Search Queries
-- `"AI announcements from tech leaders"`
-- `"startup advice and entrepreneurship tips"`
-- `"machine learning developments"`
-- `"what's new in AI"`
+```
+"AI announcements from tech leaders"
+"startup advice" author:naval
+"machine learning developments" sentiment:positive
+"what's new in AI" mode:semantic
+```
 
-### Questions to Ask
-- `"What are people saying about AGI?"`
-- `"What startup advice do founders share?"`
-- `"What AI tools are being announced?"`
+### Questions to Ask (via /api/ask)
+```
+"What are people saying about AGI?"
+"What startup advice do founders share?"
+"What AI tools are being announced?"
+"How do tech leaders view AI safety?"
+```
+
+---
 
 ## 🔧 Troubleshooting
 
-### Grok API Issues
+### Common Issues
 
-1. **"Grok Not Configured"**: Ensure `XAI_API_KEY` is set correctly
-2. **Rate Limiting**: The app includes retry logic, but wait a moment if you hit limits
-3. **API Errors**: Check the console for detailed error messages
+| Issue | Solution |
+|-------|----------|
+| "Grok Not Configured" | Ensure `XAI_API_KEY` is set correctly |
+| Empty search results | Load sample data first: POST /api/scrape `{"load_sample": true}` |
+| Slow searches | Disable AI features: `enhance_query=false&include_summary=false` |
+| Rate limiting | Wait a moment, the app has retry logic with backoff |
+| Docker build fails | Ensure Docker has 4GB+ memory allocated |
+| Port 8000 in use | Change port in docker-compose.yml |
 
-### Database Issues
+### API Rate Limits
 
-1. **Empty Results**: Load sample data first via the UI or API
-2. **Search Errors**: The app falls back to LIKE search if FTS5 fails
-
-### Docker Issues
-
-1. **Build Failures**: Ensure Docker has enough memory (4GB+ recommended)
-2. **Port Conflicts**: Change the port mapping in `docker-compose.yml`
-
-## 📝 API Rate Limits
-
-- Search: Uses Grok for query enhancement and summarization
 - Each search makes 2-3 Grok API calls (query enhancement, summarization)
 - Question answering makes 1-2 calls
-- Consider setting `enhance_query=false` or `include_summary=false` to reduce API usage
+- To reduce API usage: `enhance_query=false` or `include_summary=false`
 
-## 🚧 Future Improvements
+---
 
-- [ ] Embedding-based semantic search
-- [ ] Real-time X/Twitter API integration
-- [ ] User authentication
-- [ ] Saved searches and bookmarks
-- [ ] Export functionality
-- [ ] More advanced filtering options
+## 📊 Technical Specifications
+
+| Component | Technology | Details |
+|-----------|------------|---------|
+| **Backend** | FastAPI 0.109 | Async Python, auto-docs at /docs |
+| **Database** | SQLite + FTS5 | Full-text search, ACID compliant |
+| **Embeddings** | 128-dim hash vectors | Deterministic, no external API needed |
+| **Frontend** | React 18 + Vite | TypeScript, Tailwind CSS |
+| **AI** | Grok API (xAI) | Query enhancement, summarization |
+| **Container** | Docker + Compose | Single-command deployment |
+
+---
 
 ## 📄 License
 
@@ -292,4 +420,3 @@ MIT License - see LICENSE file for details.
 - FastAPI for the excellent web framework
 - React + Vite for the frontend
 - Tailwind CSS for styling
-

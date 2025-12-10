@@ -97,6 +97,7 @@ class ScrapeRequest(BaseModel):
     """Scrape request schema."""
     username: Optional[str] = Field(None, description="X username to scrape")
     load_sample: bool = Field(default=False, description="Load sample data")
+    scrape_popular: bool = Field(default=False, description="Scrape from popular tech accounts")
 
 
 class ScrapeResponse(BaseModel):

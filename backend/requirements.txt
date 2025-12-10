@@ -27,6 +27,5 @@ slowapi==0.1.9
 python-dotenv==1.0.0
 tenacity==8.2.3
 
-# Optional: embeddings (can be disabled)
+# Optional: embeddings
 numpy==1.26.3
-scikit-learn==1.4.0

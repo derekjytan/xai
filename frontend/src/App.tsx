@@ -283,6 +283,18 @@ export default function App() {
     loadInitialData();
   }, []);
 
+  // Auto-refresh search when filters change (with debounce)
+  useEffect(() => {
+    // Only trigger if there's an active query
+    if (!query.trim()) return;
+    
+    const debounceTimer = setTimeout(() => {
+      handleSearch();
+    }, 300); // 300ms debounce
+    
+    return () => clearTimeout(debounceTimer);
+  }, [filters.sortBy, filters.sortOrder, filters.sentiment, filters.author, filters.searchMode]);
+
   async function loadInitialData() {
     try {
       const [healthData, statsData] = await Promise.all([

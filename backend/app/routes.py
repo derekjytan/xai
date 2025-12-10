@@ -140,7 +140,10 @@ async def scrape_posts(
     """
     Scrape posts from X or load sample data.
     
-    Set load_sample=true to load demo data, or provide username to scrape.
+    Options:
+    - load_sample=true: Load demo data
+    - username: Scrape real posts from specific account
+    - scrape_popular=true: Scrape from popular tech accounts (elonmusk, sama, karpathy, etc.)
     """
     try:
         if request.load_sample:
@@ -151,6 +154,16 @@ async def scrape_posts(
                 "message": f"Loaded {len(posts)} sample posts",
                 "posts_added": len(posts),
                 "posts": posts,
+            }
+        elif hasattr(request, 'scrape_popular') and request.scrape_popular:
+            # Scrape from multiple popular accounts
+            results = await scraper.scrape_popular_accounts(db)
+            return {
+                "success": True,
+                "message": f"Scraped {results['total_posts']} posts from {len(results['accounts_scraped'])} accounts",
+                "posts_added": results['total_posts'],
+                "posts": [],
+                "details": results
             }
         elif request.username:
             posts = await scraper.scrape_account(request.username, db)
@@ -164,7 +177,7 @@ async def scrape_posts(
         else:
             raise HTTPException(
                 status_code=400,
-                detail="Provide username or set load_sample=true"
+                detail="Provide username, set load_sample=true, or set scrape_popular=true"
             )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
